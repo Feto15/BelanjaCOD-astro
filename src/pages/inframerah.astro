@@ -2,6 +2,7 @@
 import Footer from '../components/Footer.astro';
 import ContentContainer from '../components/ContentContainer.astro';
 import Checklist from '../components/Checklist.astro';
+import ImageCarousel from '../components/ImageCarousel.astro';
 import Layout from '../layouts/Layout.astro';
 
 const checklistItems = [
@@ -10,16 +11,23 @@ const checklistItems = [
   "Ringkas & mudah dibawa.",
   "Baterai isi ulang tahan lama."
 ];
+
+const images = [
+  { src: "/src/assets/1-1.webp", alt: "Image 1" },
+  { src: "/src/assets/2 (1).webp", alt: "Image 2" },
+  { src: "/src/assets/Screenshot-2025-10-03-at-00.22.58.webp", alt: "Image 3" },
+];
 ---
 
 <Layout>
 	<ContentContainer>
 		<h1>hello world</h1>
-		<ul class="text-center my-8">
+				<ul class="text-center my-8">
 			<li><img src="/src/assets/1-1.webp" alt="Image 1" class="w-full" /></li>
 			<li><img src="/src/assets/2 (1).webp" alt="Image 2" class="w-full" /></li>
 		</ul>
 		<Checklist items={checklistItems} />
+		<ImageCarousel images={images} />
 	</ContentContainer>
 	<Footer/>
 </Layout>

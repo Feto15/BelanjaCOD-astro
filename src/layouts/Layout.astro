@@ -1,17 +1,21 @@
 ---
 import '../styles/global.css'
+import FacebookPixel from '../components/FacebookPixel.astro';
+
+const { title = 'Produk' } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="id">
 	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>{title}</title>
+		<FacebookPixel />
 	</head>
-	<body>
+	<body class="bg-white text-slate-800">
 		<slot />
 	</body>
 </html>

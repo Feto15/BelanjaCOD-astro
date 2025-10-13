@@ -2,7 +2,7 @@
 import '../styles/global.css'
 import FacebookPixel from '../components/FacebookPixel.astro';
 
-const { title = 'Produk' } = Astro.props;
+const { title = 'Belanja COD', pixelId } = Astro.props;
 ---
 
 <!doctype html>
@@ -13,7 +13,7 @@ const { title = 'Produk' } = Astro.props;
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
-		<FacebookPixel />
+		<FacebookPixel pixelId={pixelId} />
 	</head>
 	<body class="bg-white text-slate-800">
 		<slot />

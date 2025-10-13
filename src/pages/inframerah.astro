@@ -4,6 +4,7 @@ import ContentContainer from '../components/ContentContainer.astro';
 import Checklist from '../components/Checklist.astro';
 import ImageCarousel from '../components/ImageCarousel.astro';
 import Layout from '../layouts/Layout.astro';
+import OrderForm from '../components/OrderForm.astro';
 
 const checklistItems = [
   "Lindungi privasi dari kamera tersembunyi.",
@@ -17,9 +18,11 @@ const images = [
   { src: "/src/assets/2 (1).webp", alt: "Image 2" },
   { src: "/src/assets/Screenshot-2025-10-03-at-00.22.58.webp", alt: "Image 3" },
 ];
+
+const pixelId = '2393815634108200';
 ---
 
-<Layout>
+<Layout pixelId={pixelId}>
 	<ContentContainer>
 		<h1>hello world</h1>
 				<ul class="text-center my-8">
@@ -28,6 +31,13 @@ const images = [
 		</ul>
 		<Checklist items={checklistItems} />
 		<ImageCarousel images={images} />
+		<OrderForm
+      product_id="SKU-003"
+      product_name="Detektor Inframerah"
+      price={99000}
+      currency="IDR"
+      quantity={1}
+    />
 	</ContentContainer>
 	<Footer/>
 </Layout>

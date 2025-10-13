@@ -8,50 +8,59 @@ const {
 } = Astro.props;
 ---
 
-<div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+<div class="max-w-lg mx-auto p-6 bg-white rounded-lg ">
   <h2 class="text-2xl font-bold mb-6 text-center">Form Pemesanan</h2>
   
-  <form id="orderForm" class="space-y-4">
+  <form id="orderForm" class="space-y-3">
     <!-- Honeypot field (hidden) -->
     <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" />
+    <input type="hidden" name="product_id" value={product_id} />
+    <input type="hidden" name="product_name" value={product_name} />
+    <input type="hidden" name="price" value={price} />
+    <input type="hidden" name="currency" value={currency} />
+    <input type="hidden" name="quantity" value={quantity} />
     
-    <div>
-      <label for="nama" class="block text-sm font-medium text-gray-700 mb-1">
-        Nama Lengkap <span class="text-red-500">*</span>
-      </label>
-      <input
-        type="text"
-        id="nama"
-        name="nama"
-        required
-        minlength="3"
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        placeholder="Masukkan nama lengkap"
-      />
+    <div class="field-wrap input-holder">
+      <div class="input-shell">
+        <input
+          type="text"
+          id="nama"
+          name="nama"
+          aria-label="Nama Lengkap"
+          required
+          minlength="3"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          placeholder="Nama Anda"
+        />
+        <span class="field-icon">!</span>
+      </div>
+      <p id="errNama" class="mt-1 text-sm text-red-600 hidden" aria-live="polite"></p>
     </div>
 
-    <div>
-      <label for="whatsapp" class="block text-sm font-medium text-gray-700 mb-1">
-        Nomor WhatsApp <span class="text-red-500">*</span>
-      </label>
-      <input
-        type="tel"
-        id="whatsapp"
-        name="whatsapp"
-        required
-        pattern="[0-9]+"
-        minlength="10"
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        placeholder="08123456789"
-      />
+    <div class="field-wrap input-holder">
+      <div class="input-shell">
+        <input
+          type="tel"
+          id="whatsapp"
+          name="whatsapp"
+          aria-label="Nomor WhatsApp"
+          required
+          pattern="[0-9]+"
+          minlength="10"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          placeholder="No. WhatsApp"
+        />
+        <span class="field-icon">!</span>
+      </div>
       <p class="mt-1 text-xs text-gray-500">Format: 08xxx atau 628xxx</p>
+      <p id="errWa" class="mt-1 text-sm text-red-600 hidden" aria-live="polite"></p>
     </div>
 
-    <div class="pt-2">
+    <div class="pt-1">
       <button
         type="submit"
-        id="submitBtn"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-105"
+        id="orderSubmitBtn"
+        class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 ease-in-out"
       >
         Beli Sekarang »
       </button>
@@ -63,189 +72,304 @@ const {
 
 <script define:vars={{ product_id, product_name, price, currency, quantity }}>
   document.addEventListener('DOMContentLoaded', () => {
-    const formEl = document.getElementById('orderForm');
-    const btnEl = document.getElementById('submitBtn');
-    const msgEl = document.getElementById('message');
+    /* ===== CONFIG ===== */
+    const USE_PROD = true; // PROD mode
+    const WEBHOOK_TEST = "https://n8n.tiketkita.space/webhook-test/2ae8e62f-af0a-4074-829d-65b150c42524";
+    const WEBHOOK_PROD =  "https://n8n.tiketkita.space/webhook/2ae8e62f-af0a-4074-829d-65b150c42524";
+    const WEBHOOK_URL = USE_PROD ? WEBHOOK_PROD : WEBHOOK_TEST;
 
-    // Environment variables
-    const USE_PROD = import.meta.env.PUBLIC_USE_PROD === 'true';
-    const WEBHOOK_URL = USE_PROD 
-      ? import.meta.env.PUBLIC_WEBHOOK_PROD 
-      : import.meta.env.PUBLIC_WEBHOOK_TEST;
-    const PIXEL_ID = import.meta.env.PUBLIC_PIXEL_ID;
-    const EVENT_NAME = import.meta.env.PUBLIC_EVENT_NAME || 'AddToCart';
-    const WA_NUMBER = import.meta.env.PUBLIC_WA_NUMBER;
-    const WA_NEW_TAB = import.meta.env.PUBLIC_WA_NEW_TAB === 'true';
+    const PIXEL_ID = '2393815634108200'; // sama dengan yang di <head>
 
-    // Helper: Get cookie
+    // nomor WA admin tujuan
+    const WA_NUMBER = "62895619874681"; // hanya digit
+    const WA_NEW_TAB = false;           // true kalau mau buka tab baru
+
+    // === Standard Meta Pixel event name (ubah di sini bila perlu) ===
+    const EVENT_NAME = 'AddToCart';
+
+    /* ===== HELPERS ===== */
     function getCookie(name) {
-      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-      return match ? match[2] : null;
+      const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return m ? decodeURIComponent(m.pop()) : '';
     }
-
-    // Helper: Set cookie
     function setCookie(name, value, days = 90) {
-      const expires = new Date(Date.now() + days * 864e5).toUTCString();
-      document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
+      document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${days * 86400}; SameSite=Lax`;
     }
-
-    // Helper: Generate event ID
     function makeEventId() {
-      return Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      return 'ev_' + crypto.getRandomValues(new Uint32Array(4)).join('');
     }
-
-    // Helper: Get UTM parameters
     function getUTMs() {
-      const params = new URLSearchParams(location.search);
-      return {
-        utm_source: params.get('utm_source') || '',
-        utm_medium: params.get('utm_medium') || '',
-        utm_campaign: params.get('utm_campaign') || '',
-        utm_term: params.get('utm_term') || '',
-        utm_content: params.get('utm_content') || ''
-      };
+      const p = new URLSearchParams(location.search);
+      const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+      const o = {};
+      keys.forEach(k => {
+        if (p.get(k)) o[k] = p.get(k);
+      });
+      return o;
     }
 
-    // Helper: Normalize WhatsApp number
-    function normalizeWA(input) {
-      let digits = input.replace(/\D/g, '');
-      if (digits.startsWith('0')) digits = '62' + digits.slice(1);
-      else if (!digits.startsWith('62')) digits = '62' + digits;
-      return digits;
+    function normalizeName(v) {
+      return v.replace(/\s+/g, ' ').trim();
+    }
+    function isValidName(v) {
+      const s = normalizeName(v);
+      if (s.length < 2) return false;
+      if (!/[A-Za-z]/.test(s)) return false;
+      if (!/^[A-Za-z .'-]+$/.test(s)) return false;
+      return true;
+    }
+    function normalizePhoneID(rawDigits) {
+      let d = (rawDigits || '').replace(/\D+/g, '');
+      if (!d) return '';
+      if (d.startsWith('62')) return d;
+      if (d.startsWith('0')) return '62' + d.slice(1);
+      if (d.startsWith('8')) return '62' + d;
+      return d;
     }
 
-    formEl.addEventListener('submit', async (e) => {
+    const formEl = document.getElementById('orderForm');
+    const btnEl = document.getElementById('orderSubmitBtn');
+    const namaEl = formEl?.querySelector('input[name="nama"]');
+    const waEl = formEl?.querySelector('input[name="whatsapp"]');
+    const errNamaEl = document.getElementById('errNama');
+    const errWaEl = document.getElementById('errWa');
+    let msgEl = document.getElementById('message');
+    if (!msgEl) {
+      msgEl = document.createElement('div');
+      msgEl.id = 'message';
+      formEl?.after(msgEl);
+    }
+    if (!formEl || !btnEl) {
+      console.error('[FORM] element missing');
+      return;
+    }
+
+    console.log('[FORM] Ready (click mode), webhook =', WEBHOOK_URL);
+
+    function setError(el, on) {
+      if (!el) return;
+      el.classList.toggle('field-error', !!on);
+      el.setAttribute('aria-invalid', on ? 'true' : 'false');
+      const wrap = el.closest('.field-wrap');
+      if (wrap) wrap.classList.toggle('has-error', !!on);
+    }
+    function setValid(el, on) {
+      if (!el) return;
+      el.classList.toggle('field-valid', !!on);
+      const wrap = el.closest('.field-wrap');
+      if (wrap) wrap.classList.toggle('has-valid', !!on);
+    }
+    function showErr(elMsg, msg) {
+      if (!elMsg) return;
+      elMsg.textContent = msg || '';
+      elMsg.classList.toggle('hidden', !msg);
+    }
+
+    function validateNama() {
+      const raw = namaEl?.value || '';
+      const nama = normalizeName(raw);
+      let msg = '';
+      if (!nama) msg = 'Kolom Nama wajib diisi.';
+      else if (!isValidName(nama)) msg = "Nama harus berisi huruf dan hanya karakter nama (spasi, . '-).";
+      if (msg) {
+        setError(namaEl, true);
+        setValid(namaEl, false);
+        showErr(errNamaEl, msg);
+        namaEl?.setCustomValidity(msg);
+        return { ok: false, nama, raw };
+      }
+      setError(namaEl, false);
+      setValid(namaEl, true);
+      showErr(errNamaEl, '');
+      namaEl?.setCustomValidity('');
+      return { ok: true, nama, raw };
+    }
+
+    function validateWa() {
+      const waRaw = waEl?.value || '';
+      const waDigitsOnly = (waRaw.match(/\d+/g) || []).join('');
+      const waDigits = normalizePhoneID(waDigitsOnly);
+      let msg = '';
+      if (!waRaw.trim()) msg = 'Kolom No Handphone/WhatsApp wajib diisi.';
+      else if ((waDigits.match(/\d/g) || []).length <= 8) msg = 'No. WhatsApp minimal 9 digit angka.';
+      if (msg) {
+        setError(waEl, true);
+        setValid(waEl, false);
+        showErr(errWaEl, msg);
+        waEl?.setCustomValidity(msg);
+        return { ok: false, waRaw, waDigits };
+      }
+      setError(waEl, false);
+      setValid(waEl, true);
+      showErr(errWaEl, '');
+      waEl?.setCustomValidity('');
+      return { ok: true, waRaw, waDigits };
+    }
+
+    namaEl?.addEventListener('input', validateNama);
+    waEl?.addEventListener('input', validateWa);
+
+    btnEl.addEventListener('click', async (e) => {
       e.preventDefault();
-      
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
       btnEl.disabled = true;
+      const oldText = btnEl.textContent;
       btnEl.textContent = 'Mengirim...';
+
+      setError(namaEl, false);
+      setError(waEl, false);
+      setValid(namaEl, false);
+      setValid(waEl, false);
+      showErr(errNamaEl, '');
+      showErr(errWaEl, '');
       msgEl.textContent = '';
-
-      const formData = new FormData(formEl);
-      const honeypot = formData.get('website');
-      const nama = (formData.get('nama') || '').trim();
-      const whatsapp = (formData.get('whatsapp') || '').trim();
-
-      const okNama = nama.length >= 3;
-      const okWa = whatsapp.length >= 10;
-      const waDigits = normalizeWA(whatsapp);
-
-      // Spam check
-      if (honeypot) {
-        msgEl.textContent = 'Terdeteksi spam.';
-        msgEl.className = 'mt-3 text-red-700';
-        btnEl.disabled = false;
-        btnEl.textContent = 'Beli Sekarang »';
-        return;
-      }
-
-      // Validation
-      if (!okNama || !okWa) {
-        msgEl.textContent = 'Periksa kembali data yang diisi.';
-        msgEl.className = 'mt-3 text-red-700';
-        formEl.reportValidity();
-        btnEl.disabled = false;
-        btnEl.textContent = 'Beli Sekarang »';
-        return;
-      }
-
-      // Facebook Pixel cookies
-      const fbp = getCookie('_fbp') || '';
-      let fbc = getCookie('_fbc') || '';
-      const fbclid = new URLSearchParams(location.search).get('fbclid');
-      
-      if (!fbc && fbclid) {
-        fbc = `fb.1.${Date.now()}.${fbclid}`;
-        setCookie('_fbc', fbc);
-      }
-
-      const event_id = makeEventId();
-
-      // Facebook Pixel: Advanced Matching
-      try {
-        if (window.fbq && PIXEL_ID) {
-          const first = (nama || '').toLowerCase().split(' ')[0] || '';
-          const last = (nama || '').toLowerCase().split(' ').slice(1).join(' ') || '';
-          fbq('init', PIXEL_ID, { 
-            ph: waDigits, 
-            fn: first, 
-            ln: last, 
-            country: 'id' 
-          });
-        }
-      } catch (err) {
-        console.error('[PIXEL] AM Error', err);
-      }
-
-      // Facebook Pixel: Track Event
-      try {
-        if (window.fbq) {
-          fbq('track', EVENT_NAME, {
-            value: price,
-            currency,
-            contents: [{ id: product_id || 'SKU', quantity, item_price: price }],
-            content_type: 'product',
-            content_name: product_name || 'Produk',
-            status: 'submitted'
-          }, { eventID: event_id });
-        }
-      } catch (err) {
-        console.error('[PIXEL] Track Error', err);
-      }
-
-      // Webhook payload
-      const payload = {
-        event_name: EVENT_NAME,
-        event_id,
-        fbp,
-        fbc,
-        url: location.href,
-        utm: getUTMs(),
-        user_agent: navigator.userAgent,
-        ts: new Date().toISOString(),
-        form: {
-          nama,
-          whatsapp: waDigits,
-          product_id,
-          product_name,
-          price,
-          currency,
-          quantity
-        }
-      };
+      msgEl.className = 'mt-3 text-sm';
 
       try {
-        // Send to webhook
+        const { ok: okNama, nama } = validateNama();
+        const { ok: okWa, waDigits } = validateWa();
+        const product_id = document.querySelector('input[name="product_id"]')?.value || '';
+        const product_name = document.querySelector('input[name="product_name"]')?.value || '';
+        const price = Number(document.querySelector('input[name="price"]')?.value || 0);
+        const currency = (document.querySelector('input[name="currency"]')?.value || 'IDR').toUpperCase();
+        const quantity = Number(document.querySelector('input[name="quantity"]')?.value || 1);
+        const honeypot = document.querySelector('input[name="website"]')?.value || '';
+
+        if (honeypot) {
+          msgEl.textContent = 'Terdeteksi spam.';
+          msgEl.className = 'mt-3 text-red-700';
+          return;
+        }
+        if (!okNama || !okWa) {
+          msgEl.textContent = 'Periksa kembali data yang diisi.';
+          msgEl.className = 'mt-3 text-red-700';
+          formEl.reportValidity();
+          return;
+        }
+
+        const fbp = getCookie('_fbp') || '';
+        let fbc = getCookie('_fbc') || '';
+        const fbclid = new URLSearchParams(location.search).get('fbclid');
+        if (!fbc && fbclid) {
+          fbc = `fb.1.${Date.now()}.${fbclid}`;
+          setCookie('_fbc', fbc);
+        }
+        const event_id = makeEventId();
+
+        try {
+          if (window.fbq) {
+            fbq('init', PIXEL_ID, {
+              ph: waDigits,
+              fn: (nama || '').toLowerCase().split(' ')[0] || '',
+              ln: (nama || '').toLowerCase().split(' ').slice(1).join(' ') || '',
+              country: 'id'
+            });
+            console.log('[PIXEL] Advanced Matching injected');
+          } else {
+            console.warn('[PIXEL] fbq tidak tersedia. Pastikan base Pixel di <head>.');
+          }
+        } catch (err) {
+          console.error('[PIXEL] AM Error', err);
+        }
+
+        try {
+          if (window.fbq) {
+            fbq('track', EVENT_NAME, {
+              value: price,
+              currency,
+              contents: [{ id: product_id || 'SKU', quantity, item_price: price }],
+              content_type: 'product',
+              content_name: product_name || 'Produk',
+              status: 'submitted'
+            }, { eventID: event_id });
+            console.log('[PIXEL]', EVENT_NAME, 'fired', { event_id, price, currency });
+          }
+        } catch (err) {
+          console.error('[PIXEL] Track Error', err);
+        }
+
+        const payload = {
+          event_name: EVENT_NAME,
+          event_id, fbp, fbc,
+          url: location.href,
+          utm: getUTMs(),
+          user_agent: navigator.userAgent,
+          ts: new Date().toISOString(),
+          form: { nama, whatsapp: waDigits, product_id, product_name, price, currency, quantity }
+        };
+
+        console.log('[WEBHOOK] POST', WEBHOOK_URL, payload);
         const res = await fetch(WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
           credentials: 'omit'
         });
-
         const text = await res.text();
+        console.log('[WEBHOOK] Status:', res.status, 'Body:', text);
+        if (!res.ok) throw new Error('Bad response ' + res.status);
 
-        if (!res.ok) {
-          throw new Error('Bad response ' + res.status + ' — ' + text);
-        }
-
-        msgEl.textContent = (USE_PROD ? '✅ Terkirim' : '✅ Terkirim (TEST)') + ' — membuka WhatsApp...';
+        msgEl.textContent = (USE_PROD ? '✅ Terkirim ' : '✅ Terkirim (TEST)') + ' — membuka WhatsApp...';
         msgEl.className = 'mt-3 text-green-700';
 
-        // Redirect to WhatsApp
-        const waText = `Halo, saya sudah melakukan pemesanan ${product_name || "Produk"}, atas nama ${nama}. Mohon segera diproses ya 🙏🏻`;
+        const waText = `Halo, saya sudah melakukan pemesanan ${product_name || 'Produk'}, atas nama ${nama}. Mohon segera diproses ya 🙏🏻`;
         const waUrl = `https://api.whatsapp.com/send?phone=${WA_NUMBER}&text=${encodeURIComponent(waText)}`;
-
         WA_NEW_TAB ? window.open(waUrl, '_blank') : (window.location.href = waUrl);
-
       } catch (err) {
         console.error('[WEBHOOK] Error', err);
         msgEl.textContent = '⚠️ Gagal kirim. Error Network.';
         msgEl.className = 'mt-3 text-red-700';
       } finally {
         btnEl.disabled = false;
-        btnEl.textContent = 'Beli Sekarang »';
+        btnEl.textContent = oldText;
       }
-    });
+    }, true);
   });
 </script>
+<style>
+  .field-wrap {
+    position: relative;
+  }
+  .input-shell {
+    position: relative;
+  }
+  .field-error {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 1px #dc2626 inset;
+  }
+  .field-valid {
+    border-color: #16a34a !important;
+    box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.2) !important;
+  }
+  .field-valid:focus {
+    border-color: #16a34a !important;
+    box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.3) !important;
+    --tw-ring-color: rgba(22, 163, 74, 0.35) !important;
+    --tw-ring-offset-width: 0px !important;
+  }
+  .input-shell .field-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 9999px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    color: #dc2626;
+    border: 2px solid #dc2626;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1;
+    background: #fff;
+    pointer-events: none;
+  }
+  .field-wrap.has-error .field-icon {
+    display: flex;
+  }
+</style>

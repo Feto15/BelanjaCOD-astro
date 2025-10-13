@@ -1,20 +1,25 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Footer from '../components/Footer.astro';
 import ContentContainer from '../components/ContentContainer.astro';
+import Checklist from '../components/Checklist.astro';
 import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const checklistItems = [
+  "Lindungi privasi dari kamera tersembunyi.",
+  "Deteksi akurat dengan inframerah.",
+  "Ringkas & mudah dibawa.",
+  "Baterai isi ulang tahan lama."
+];
 ---
 
 <Layout>
 	<ContentContainer>
 		<h1>hello world</h1>
-		<ul class="text-center">
+		<ul class="text-center my-8">
 			<li><img src="/src/assets/1-1.webp" alt="Image 1" class="w-full" /></li>
 			<li><img src="/src/assets/2 (1).webp" alt="Image 2" class="w-full" /></li>
 		</ul>
+		<Checklist items={checklistItems} />
 	</ContentContainer>
 	<Footer/>
 </Layout>

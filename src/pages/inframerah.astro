@@ -14,8 +14,8 @@ const checklistItems = [
 ];
 
 const images = [
-  { src: "/assets/1-1.webp", alt: "Image 1" },
-  { src: "/assets/2 (1).webp", alt: "Image 2" },
+  { src: "/assets/Screenshot-2025-10-03-at-00.22.58.webp", alt: "Image 1" },
+  { src: "/assets/Screenshot-2025-10-03-at-00.28.24.webp", alt: "Image 2" },
   { src: "/assets/Screenshot-2025-10-03-at-00.22.58.webp", alt: "Image 3" },
 ];
 
@@ -25,10 +25,14 @@ const pixelId = '2393815634108200';
 <Layout pixelId={pixelId}>
 	<ContentContainer>
 		<h1>hello world</h1>
-				<ul class="text-center my-8">
+			<ul class="text-center my-8">
+			<li><img src="/assets/2 (1).webp" alt="Image 2" class="w-full" /></li>		
 			<li><img src="/assets/1-1.webp" alt="Image 1" class="w-full" /></li>
-			<li><img src="/assets/2 (1).webp" alt="Image 2" class="w-full" /></li>
-		</ul>
+			<li><img src="/assets/3.webp" alt="Image 3" class="w-full" /></li>
+			<li><img src="/assets/5.webp" alt="Image 5" class="w-full" /></li>
+			<li><img src="/assets/6.webp" alt="Image 6" class="w-full" /></li>
+			<li><img src="/assets/9.webp" alt="Image 9" class="w-full" /></li>
+			</ul>
 		<Checklist items={checklistItems} />
 		<ImageCarousel images={images} />
 		<OrderForm

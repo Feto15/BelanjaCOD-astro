@@ -8,9 +8,10 @@ import OrderForm from '../components/OrderForm.astro';
 const pixelId = '2393815634108200';
 
 const images = [
-  { src: '/assets/Generated-Image-September-06-2025-12_45AM-1.webp', alt: 'Wart remover product photo 1' },
-  { src: '/assets/CqMW3D9mNzwssnuCqMqOoqbZJORdtXRJCWI6BWRP8yg.webp', alt: 'Wart remover product photo 2' },
-  { src: '/assets/Screenshot-2025-10-03-at-00.22.58.webp', alt: 'Wart remover product photo 3' }
+  { src: '/assets/CqZCvwYMYMftg6CqZrb1vacSU74XQT7iKpgyV35KQ.webp', alt: 'Wart remover product photo 1' },
+  { src: '/assets/CqZhban9bBE5H43CqZrU3eN3ZvdfcsTcS4nAy69lZKw.webp', alt: 'Wart remover product photo 2' },
+  { src: '/assets/CqZfvDDKovfjCuKCqZrJNAw576iz2XTBiPH7KjS6OxQ.webp', alt: 'Wart remover product photo 3' },
+  { src: '/assets/CqZfq93ZtnZmfDyCqZr6FXN99jhpdQTXiQhLVDGINfw.webp', alt: 'Wart remover product photo 4' }
 ];
 ---
 
@@ -19,7 +20,7 @@ const images = [
     <img
       src="/assets/Generated-Image-September-07-2025-12_58AM.webp"
       alt="Ilustrasi produk penghilang kutil"
-      class="mx-auto mb-6 max-w-xl rounded-lg shadow-lg"
+      class="mx-auto mb-6 w-full max-w-xl rounded-lg shadow-lg"
     />
     <section class="mx-auto mb-8 max-w-2xl text-center">
       <h2 class="mb-4 text-center text-2xl font-semibold text-slate-800">
@@ -31,7 +32,14 @@ const images = [
         <li>Malu karena kutil di tangan/kaki bikin tidak percaya diri?</li>
         <li>Atau takut biayanya mahal kalau ke klinik?</li>
       </ul>
-    </section>
+	 </section>
+	 	 <ul class="text-center my-8">
+			<li><img src="/assets/Generated-Image-September-06-2025-12_45AM-1.webp" alt="Image 2" class="w-full" /></li>		
+			<li><img src="/assets/CqMW3D9mNzwssnuCqMqOoqbZJORdtXRJCWI6BWRP8yg.webp" alt="Image 1" class="w-full" /></li>
+			<li><img src="/assets/CqMqWVZtvfEqh7lCqMUN17O42y6X3yT3GZW5e9PBKB1A.webp" alt="Image 3" class="w-full" /></li>
+			<li><img src="/assets/CqMWEkjmCK9bsD7CqM9iYlA3oJg4CdR9WgB5kpv0peFg-1.webp" alt="Image 5" class="w-full" /></li>
+			<li><img src="/assets/CqMJ4NGW1TvELe2CqMGhGauimpXZLjQcyjN8eZUSwvwg-1.webp" alt="Image 6" class="w-full" /></li>
+			</ul>
     <ImageCarousel images={images} />
     <OrderForm
       product_id="SKU-003"
